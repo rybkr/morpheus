@@ -15,33 +15,48 @@ Use Homebrew only as an optional distribution channel for macOS users after the 
 Repository/package branding: `morpheus-skills`  
 Installer CLI command: `morpheus`
 
-## Install as a Package
+## Install (No Clone Required)
 
 ### With `uv` (recommended)
 
-Install from this repo:
+Install directly from PyPI:
 
 ```bash
-uv tool install .
+uv tool install morpheus-skills
 morpheus list
 morpheus install --agent codex --all
 ```
 
-Run without installing globally:
+### With `pipx`
+
+```bash
+pipx install morpheus-skills
+morpheus install --agent codex --all
+```
+
+### With `pip`
+
+```bash
+python -m pip install --user morpheus-skills
+morpheus install --agent codex --all
+```
+
+## Install From Local Repo (Optional for Development)
+
+If you are developing this project locally, install from the checkout:
+
+```bash
+uv tool install .
+```
+
+You can also run without installing:
 
 ```bash
 uv run morpheus list
 uv run morpheus install --agent claude --all --dry-run
 ```
 
-### With `pipx`
-
-```bash
-pipx install .
-morpheus install --agent codex --all
-```
-
-### Use repo skills instead of bundled package skills
+### Use Repo Skills Instead of Bundled Package Skills
 
 The packaged CLI ships with bundled skills. To install directly from a local checkout, pass `--source`:
 
