@@ -101,6 +101,6 @@ One-time PyPI setup:
 
 - In PyPI project settings for `morpheus-skills`, add a trusted publisher:
 - Owner: your GitHub user/org
-- Repository: `ryanbaker/morpheus`
+- Repository: `rybkr/morpheus`
 - Workflow name: `publish.yml`
 - Environment: `pypi`
