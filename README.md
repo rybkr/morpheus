@@ -81,3 +81,26 @@ For additional TUIs/agents, use `custom` with `--target`/`-Target`.
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution, quality, and PR guidelines.
+
+## Release to PyPI (GitHub Actions)
+
+This repository includes `.github/workflows/publish.yml`.
+
+1. Bump version in `pyproject.toml` and `morpheus/__init__.py`.
+2. Commit and push to `main`.
+3. Create and push a version tag (for example `v0.1.1`).
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+The workflow builds `dist/*` and publishes to PyPI using trusted publishing.
+
+One-time PyPI setup:
+
+- In PyPI project settings for `morpheus-skills`, add a trusted publisher:
+- Owner: your GitHub user/org
+- Repository: `ryanbaker/morpheus`
+- Workflow name: `publish.yml`
+- Environment: `pypi`
