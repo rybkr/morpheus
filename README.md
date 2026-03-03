@@ -1,25 +1,13 @@
 # morpheus-skills
 
-Reusable AI agent skills stored as directory-based packages (each containing a `SKILL.md`).
+Install and manage reusable AI agent `SKILL.md` packages for Codex, Claude, and compatible tools.
 
-## Recommended Package Manager
+Package name: `morpheus-skills`  
+CLI command: `morpheus`
 
-Use `uv` for package management and distribution.
+## Install
 
-- It is cross-platform (macOS/Linux/Windows), unlike Homebrew.
-- It supports both project-local and global CLI installs.
-- It works well for Python-based installer tooling and CI automation.
-
-Use Homebrew only as an optional distribution channel for macOS users after the Python package is stable.
-
-Repository/package branding: `morpheus-skills`  
-Installer CLI command: `morpheus`
-
-## Install (No Clone Required)
-
-### With `uv` (recommended)
-
-Install directly from PyPI:
+Recommended: `uv`
 
 ```bash
 uv tool install morpheus-skills
@@ -27,95 +15,70 @@ morpheus list
 morpheus install --agent codex --all
 ```
 
-### With `pipx`
+Alternatives:
 
 ```bash
 pipx install morpheus-skills
-morpheus install --agent codex --all
+# or
+python3 -m pip install --user morpheus-skills
 ```
 
-### With `pip`
+## Usage
 
 ```bash
-python -m pip install --user morpheus-skills
+# list bundled skills
+morpheus list
+
+# install all bundled skills for Codex user scope
 morpheus install --agent codex --all
+
+# install one skill for Claude repo scope
+morpheus install --agent claude --scope repo --skill product-minded-dev
+
+# preview actions without copying
+morpheus install --agent codex --all --dry-run
 ```
 
-## Install From Local Repo (Optional for Development)
-
-If you are developing this project locally, install from the checkout:
+Install from a local checkout (development):
 
 ```bash
 uv tool install .
-```
-
-You can also run without installing:
-
-```bash
+# or run without installing
 uv run morpheus list
-uv run morpheus install --agent claude --all --dry-run
 ```
 
-### Use Repo Skills Instead of Bundled Package Skills
-
-The packaged CLI ships with bundled skills. To install directly from a local checkout, pass `--source`:
+Use repo skills instead of bundled package skills:
 
 ```bash
 morpheus install --agent codex --all --source .
 ```
 
-## CLI Usage
+## Default Targets
 
-Install all bundled skills to Codex user scope:
+- Codex user: `$CODEX_HOME/skills` or `~/.codex/skills`
+- Codex repo: `.codex/skills`
+- Claude user: `~/.claude/skills`
+- Claude repo: `.claude/skills`
 
-```bash
-morpheus install --agent codex --all
-```
+For other agents, use `--agent custom --target <path>`.
 
-Install one skill to Claude project scope:
+## Release (PyPI)
 
-```bash
-morpheus install --agent claude --scope repo --skill product-dev
-```
-
-Install to a custom agent directory:
+Tag pushes (`v*`) trigger `.github/workflows/publish.yml` to build and publish to PyPI.
 
 ```bash
-morpheus install --agent custom --target ~/.my-agent/skills --all
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
-## Supported Defaults
+Trusted publishing must match:
 
-- Codex user scope: `$CODEX_HOME/skills` or `~/.codex/skills`
-- Codex repo scope: `.codex/skills`
-- Claude user scope: `~/.claude/skills`
-- Claude repo scope: `.claude/skills`
-
-For additional TUIs/agents, use `custom` with `--target`/`-Target`.
+- Project: `morpheus-skills`
+- Owner: your GitHub user/org
+- Repository: `rybkr/morpheus`
+- Workflow: `publish.yml`
+- Environment: `pypi`
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution, quality, and PR guidelines.
-
-## Release to PyPI (GitHub Actions)
-
-This repository includes `.github/workflows/publish.yml`.
-
-1. Bump version in `pyproject.toml` and `morpheus/__init__.py`.
-2. Commit and push to `main`.
-3. Create and push a version tag (for example `v0.1.1`).
-
-```bash
-git tag v0.1.1
-git push origin v0.1.1
-```
-
-The workflow builds `dist/*` and publishes to PyPI using trusted publishing.
-
-One-time PyPI setup:
-
-- In PyPI project settings for `morpheus-skills`, add a trusted publisher:
-- Owner: your GitHub user/org
-- Repository: `rybkr/morpheus`
-- Workflow name: `publish.yml`
-- Environment: `pypi`
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
