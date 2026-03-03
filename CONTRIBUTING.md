@@ -1,6 +1,6 @@
 # Contributing
 
-This repository is an open collection of reusable AI agent skills.
+`morpheus-skills` is an open collection of reusable AI agent skills.
 
 ## Scope
 
@@ -13,7 +13,7 @@ This repository is an open collection of reusable AI agent skills.
 - One top-level directory per skill.
 - Each skill directory must include `SKILL.md`.
 - Optional helper code should live under that skill's own `scripts/`.
-- Cross-repo tooling should live in top-level `scripts/`.
+- Installer tooling is provided via the Python package CLI (`morpheus`).
 
 ## Skill Quality Bar
 
@@ -25,7 +25,7 @@ This repository is an open collection of reusable AI agent skills.
 ## Local Validation Before PR
 
 1. Confirm every skill folder includes `SKILL.md`.
-2. Run installer scripts in `--dry-run` mode.
+2. Run CLI installer in dry-run mode: `uv run morpheus install --agent codex --all --dry-run --source .`.
 3. Validate install output for both Codex and Claude paths.
 4. Re-open changed `SKILL.md` files and verify formatting is intact.
 
@@ -44,7 +44,7 @@ This repository is an open collection of reusable AI agent skills.
 
 - Treat `SKILL.md` behavior changes as user-facing changes.
 - Document breaking behavior changes in the PR description.
-- Keep installer scripts backwards compatible when possible.
+- Keep CLI behavior backwards compatible when possible.
 
 ## Security
 

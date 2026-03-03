@@ -1,35 +1,72 @@
-# AI Skills Repository
+# morpheus-skills
 
 Reusable AI agent skills stored as directory-based packages (each containing a `SKILL.md`).
 
-## Install
+## Recommended Package Manager
 
-### Bash (macOS/Linux)
+Use `uv` for package management and distribution.
 
-Install all skills to Codex user scope:
+- It is cross-platform (macOS/Linux/Windows), unlike Homebrew.
+- It supports both project-local and global CLI installs.
+- It works well for Python-based installer tooling and CI automation.
+
+Use Homebrew only as an optional distribution channel for macOS users after the Python package is stable.
+
+Repository/package branding: `morpheus-skills`  
+Installer CLI command: `morpheus`
+
+## Install as a Package
+
+### With `uv` (recommended)
+
+Install from this repo:
 
 ```bash
-./scripts/install-skills.sh --agent codex --all
+uv tool install .
+morpheus list
+morpheus install --agent codex --all
+```
+
+Run without installing globally:
+
+```bash
+uv run morpheus list
+uv run morpheus install --agent claude --all --dry-run
+```
+
+### With `pipx`
+
+```bash
+pipx install .
+morpheus install --agent codex --all
+```
+
+### Use repo skills instead of bundled package skills
+
+The packaged CLI ships with bundled skills. To install directly from a local checkout, pass `--source`:
+
+```bash
+morpheus install --agent codex --all --source .
+```
+
+## CLI Usage
+
+Install all bundled skills to Codex user scope:
+
+```bash
+morpheus install --agent codex --all
 ```
 
 Install one skill to Claude project scope:
 
 ```bash
-./scripts/install-skills.sh --agent claude --scope repo --skill product-minded-dev
+morpheus install --agent claude --scope repo --skill product-minded-dev
 ```
 
 Install to a custom agent directory:
 
 ```bash
-./scripts/install-skills.sh --agent custom --target ~/.my-agent/skills --all
-```
-
-### PowerShell (Windows)
-
-```powershell
-./scripts/install-skills.ps1 -Agent codex -All
-./scripts/install-skills.ps1 -Agent claude -Scope repo -Skill product-minded-dev
-./scripts/install-skills.ps1 -Agent custom -Target "$HOME/.my-agent/skills" -All
+morpheus install --agent custom --target ~/.my-agent/skills --all
 ```
 
 ## Supported Defaults
