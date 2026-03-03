@@ -26,6 +26,9 @@ python3 -m pip install --user morpheus-skills
 ## Usage
 
 ```bash
+# show installed CLI version
+morpheus --version
+
 # list bundled skills
 morpheus list
 
@@ -33,7 +36,7 @@ morpheus list
 morpheus install --agent codex --all
 
 # install one skill for Claude repo scope
-morpheus install --agent claude --scope repo --skill product-minded-dev
+morpheus install --agent claude --scope repo --skill product-dev
 
 # preview actions without copying
 morpheus install --agent codex --all --dry-run
@@ -47,7 +50,8 @@ uv tool install .
 uv run morpheus list
 ```
 
-Use repo skills instead of bundled package skills:
+From a repo checkout, `morpheus` automatically uses `./skills` when present.
+Override explicitly if needed:
 
 ```bash
 morpheus install --agent codex --all --source .
