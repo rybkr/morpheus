@@ -3,9 +3,12 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
-import sys
 from pathlib import Path
 from typing import NamedTuple
+
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 
 
 class InstallResult(NamedTuple):
@@ -16,13 +19,15 @@ class InstallResult(NamedTuple):
 
 
 class Style:
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
-    DIM = "\033[2m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    RED = "\033[31m"
-    CYAN = "\033[36m"
+    GREEN = "green"
+    YELLOW = "yellow"
+    RED = "red"
+    CYAN = "cyan"
+    DIM = "dim"
+
+
+CONSOLE = Console()
+ERR_CONSOLE = Console(stderr=True)
 
 
 def _default_source_dir() -> Path:
@@ -63,34 +68,23 @@ def _resolve_target(agent: str, scope: str, target: str | None, repo_root: Path)
     raise ValueError(f"Unsupported agent '{agent}'")
 
 
-def _supports_color() -> bool:
-    if os.environ.get("NO_COLOR"):
-        return False
-    return sys.stdout.isatty()
-
-
-def _fmt(text: str, color: str) -> str:
-    if not _supports_color():
-        return text
-    return f"{color}{text}{Style.RESET}"
-
-
-def _heading(text: str) -> str:
-    return _fmt(text, Style.BOLD + Style.CYAN)
-
-
-def _status_label(status: str) -> str:
+def _status_label(status: str) -> Text:
     labels = {
-        "installed": _fmt("INSTALLED", Style.GREEN),
-        "planned": _fmt("PLANNED", Style.CYAN),
-        "skipped": _fmt("SKIPPED", Style.YELLOW),
-        "error": _fmt("ERROR", Style.RED),
+        "installed": Text("INSTALLED", style=Style.GREEN),
+        "planned": Text("PLANNED", style=Style.CYAN),
+        "skipped": Text("SKIPPED", style=Style.YELLOW),
+        "error": Text("ERROR", style=Style.RED),
     }
-    return labels.get(status, status.upper())
+    return labels.get(status, Text(status.upper()))
 
 
-def _render_kv(label: str, value: object) -> str:
-    return f"{label:<10}: {value}"
+def _render_kv_table(title: str, rows: list[tuple[str, object]]) -> Table:
+    table = Table(title=title, title_style="bold cyan", show_header=False, box=None)
+    table.add_column("Field", style="bold")
+    table.add_column("Value")
+    for label, value in rows:
+        table.add_row(label, str(value))
+    return table
 
 
 def _install_skill(
@@ -124,15 +118,21 @@ def _cmd_list(args: argparse.Namespace) -> int:
     source_dir = Path(args.source).expanduser() if args.source else _default_source_dir()
     skills = _discover_skills(source_dir)
     if not skills:
-        print(f"No skills found in {source_dir}", file=sys.stderr)
+        ERR_CONSOLE.print(f"No skills found in {source_dir}", style="red")
         return 1
 
-    print(_heading("Available Skills"))
-    print(_render_kv("Source", source_dir))
-    print(_render_kv("Count", len(skills)))
-    print("")
+    CONSOLE.print(
+        _render_kv_table(
+            "Available Skills",
+            [("Source", source_dir), ("Count", len(skills))],
+        )
+    )
+    skill_table = Table(box=None, show_header=False)
+    skill_table.add_column("Index", justify="right", style="dim")
+    skill_table.add_column("Skill")
     for i, skill in enumerate(skills, start=1):
-        print(f"{i:>2}. {skill}")
+        skill_table.add_row(str(i), skill)
+    CONSOLE.print(skill_table)
     return 0
 
 
@@ -140,13 +140,13 @@ def _cmd_install(args: argparse.Namespace) -> int:
     repo_root = Path.cwd()
     source_dir = Path(args.source).expanduser() if args.source else _default_source_dir()
     if not source_dir.exists():
-        print(f"Source directory does not exist: {source_dir}", file=sys.stderr)
+        ERR_CONSOLE.print(f"Source directory does not exist: {source_dir}", style="red")
         return 1
 
     try:
         destination = _resolve_target(args.agent, args.scope, args.target, repo_root)
     except ValueError as exc:
-        print(str(exc), file=sys.stderr)
+        ERR_CONSOLE.print(str(exc), style="red")
         return 1
 
     skills = list(args.skill or [])
@@ -154,22 +154,33 @@ def _cmd_install(args: argparse.Namespace) -> int:
         skills = _discover_skills(source_dir)
 
     if not skills:
-        print("No skills selected. Pass --all or one or more --skill.", file=sys.stderr)
+        ERR_CONSOLE.print("No skills selected. Pass --all or one or more --skill.", style="red")
         return 1
 
-    print(_heading("Install Plan"))
-    print(_render_kv("Agent", args.agent))
-    print(_render_kv("Scope", args.scope))
-    print(_render_kv("Source", source_dir))
-    print(_render_kv("Target", destination))
-    print(_render_kv("Dry run", args.dry_run))
-    print(_render_kv("Skills", ", ".join(skills)))
-    print("")
+    CONSOLE.print(
+        _render_kv_table(
+            "Install Plan",
+            [
+                ("Agent", args.agent),
+                ("Scope", args.scope),
+                ("Source", source_dir),
+                ("Target", destination),
+                ("Dry run", args.dry_run),
+                ("Skills", ", ".join(skills)),
+            ],
+        )
+    )
 
     installed = 0
     planned = 0
     skipped = 0
     errors = 0
+    result_table = Table(title="Actions", title_style="bold cyan")
+    result_table.add_column("Status", no_wrap=True)
+    result_table.add_column("Skill", no_wrap=True)
+    result_table.add_column("Destination")
+    result_table.add_column("Detail")
+
     for skill in skills:
         result = _install_skill(
             source_dir=source_dir,
@@ -178,9 +189,14 @@ def _cmd_install(args: argparse.Namespace) -> int:
             dry_run=args.dry_run,
             force=args.force,
         )
-        print(f"{_status_label(result.status):<12} {result.skill} -> {result.destination}")
-        if result.detail and result.status in {"skipped", "error"}:
-            print(f"             {_fmt(result.detail, Style.DIM)}")
+        detail = result.detail if result.detail else ""
+        detail_style = Style.DIM if result.status in {"skipped", "error"} else ""
+        result_table.add_row(
+            _status_label(result.status),
+            result.skill,
+            str(result.destination),
+            Text(detail, style=detail_style),
+        )
         if result.status == "installed":
             installed += 1
         elif result.status == "planned":
@@ -190,12 +206,18 @@ def _cmd_install(args: argparse.Namespace) -> int:
         elif result.status == "error":
             errors += 1
 
-    print("")
-    print(_heading("Summary"))
-    print(_render_kv("Installed", installed))
-    print(_render_kv("Planned", planned))
-    print(_render_kv("Skipped", skipped))
-    print(_render_kv("Errors", errors))
+    CONSOLE.print(result_table)
+    CONSOLE.print(
+        _render_kv_table(
+            "Summary",
+            [
+                ("Installed", installed),
+                ("Planned", planned),
+                ("Skipped", skipped),
+                ("Errors", errors),
+            ],
+        )
+    )
     return 1 if errors else 0
 
 

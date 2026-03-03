@@ -75,7 +75,7 @@ morpheus install --agent codex --all
 Install one skill to Claude project scope:
 
 ```bash
-morpheus install --agent claude --scope repo --skill product-minded-dev
+morpheus install --agent claude --scope repo --skill product-dev
 ```
 
 Install to a custom agent directory:
