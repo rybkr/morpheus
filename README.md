@@ -42,6 +42,13 @@ morpheus install --agent claude --scope repo --skill product-dev
 morpheus install --agent codex --all --dry-run
 ```
 
+## Bundled Skills
+
+- `docs-writer` - Write and maintain documentation.
+- `frontend-design` - Design focused user interfaces.
+- `product-dev` - Scope and sequence product work.
+- `social-action-approval` - Require approval before publishing or changing social accounts.
+
 Install from a local checkout (development):
 
 ```bash
